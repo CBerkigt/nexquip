@@ -1,12 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import OpenAI from 'openai'
+if (!process.env.OPENAI_API_KEY) {
+  throw new Error('OPENAI_API_KEY ist nicht gesetzt. Bitte in .env.local eintragen.')
+}
+
 
 const openai = new OpenAI({
-  apiKey: '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', // Dein echter API-Key
+  apiKey: process.env.OPENAI_API_KEY,
   defaultHeaders: {
     'OpenAI-Beta': 'assistants=v2',
   },
 })
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end('Method Not Allowed')
