@@ -11,6 +11,8 @@ export default function ChatPage() {
   const endRef = useRef<HTMLDivElement>(null)
   const hasAskedRef = useRef(false)
 
+
+
   const scrollToBottom = () => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
@@ -30,8 +32,8 @@ export default function ChatPage() {
         body: JSON.stringify({ message: userText }),
       })
       const data = await res.json()
-      const reply = data.reply ?? 'Keine Antwort erhalten.'
-      setMessages((prev) => [...prev, { role: 'assistant', text: reply }])
+      const cleanReply = (data.reply ?? 'Keine Antwort erhalten.').replace(/【[^】]+】/g, '').trim()
+setMessages((prev) => [...prev, { role: 'assistant', text: cleanReply }])
     } catch (err: unknown) {
       console.error('Fehler bei der Anfrage:', err)
       setMessages((prev) => [...prev, { role: 'assistant', text: '❌ Fehler bei der KI-Anfrage.' }])
@@ -50,6 +52,30 @@ export default function ChatPage() {
   useEffect(() => {
     scrollToBottom()
   }, [messages, loading])
+
+useEffect(() => {
+  const lastMsg = messages[messages.length - 1]
+  const phoneRegex = /(\+49|0)[1-9][0-9\s\-]{7,}/
+
+  if (lastMsg?.role === 'user' && phoneRegex.test(lastMsg.text)) {
+    const phone = lastMsg.text.match(phoneRegex)?.[0]
+
+    fetch('/api/send-contact-mail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, chatHistory: messages }),
+    }).then((res) => {
+      if (res.ok) {
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', text: 'Danke! Wir haben deine Nummer erhalten. Ein Berater meldet sich bald bei dir.' },
+        ])
+      }
+    })
+  }
+}, [messages])
+
+
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {

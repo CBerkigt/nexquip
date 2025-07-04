@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import OpenAI from 'openai'
 
 const openai = new OpenAI({
-  apiKey: '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', // Dein echter API-Key
+  apiKey: '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', // Dein echter API-Key
   defaultHeaders: {
     'OpenAI-Beta': 'assistants=v2',
   },
